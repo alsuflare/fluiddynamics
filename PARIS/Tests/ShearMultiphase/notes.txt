@@ -1,0 +1,30 @@
+Momcons   nx	scheme     r	result	blowup time	CFL             notes
+	  				       		default 0,2
+-------- Unit density ratio ------------------
+T	  32	QUICK WY   1	stable
+T	  64	QUICK WY   1	stable
+T	  128	QUICK WY   1	unstable   0,28
+
+F	  32	QUICK WY   1    stable     2,0
+F	  64	QUICK WY   1    unstable   0,47
+F	  128	QUICK WY   1	unstable   0,3
+------- large density ratios -----------
+T	  32	QUICK WY  1d3	stable     2,0
+T	  64	QUICK WY  1d3   unstable   0,83	
+T	  128	QUICK WY  1d3   unstable   0,31                          
+T	  128	QUICK WY  1d3	unstable   0,04		0,384       WY is inconsistent for CFL>1/6
+
+F	  32	QUICK WY  1d3	unstable   0,51
+F	  64	QUICK WY  1d3	unstable   0,28 
+F	  128	QUICK WY  1d3	unstable   0,17
+F	  128	QUICK WY  1d3	unstable   0,798	0,384       WY is inconsistent for CFL>1/6
+---------- ENO scheme --------------------
+T	  128	ENO WY	  1d3	unstable   0,24   	0,384       WY is inconsistent for CFL>1/6   
+T	  128	ENO CIAM  1d3	unstable   0,0998         "
+T	  128	Superbee CIAM 1d3	unstable   0,798  "
+T	  128	Superbee WY   1d3	unstable   0,06   " 
+
+F	  128	ENO CIAM    1d3	unstable   0,68         0,384
+F	  128	ENO CIAM    1d3	unstable   1,25         0,2    The old test case was like this but 
+	  	    	    		   		       stopping at time 1,0
+

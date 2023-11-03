@@ -1,0 +1,123 @@
+
+Authors:  Marco Crialesi Esposito
+
+Please read this file if you want to use PARIS on GPUs.
+ 
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+		Requirements and CUDA-Toolkit installation
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+In order to use the Poisson solver on CUDA, you need to have installed 
+a CUDA Toolkit version newer than 6.5 (the code has been developed 
+and tested with CUDA-Toolkit-7.5 and higher). In order to do so, please visit:
+
+https://developer.nvidia.com/cuda-toolkit-archive
+
+and check which version is compatible with your OS/Hardware.
+If the installation was successfull, you should be able to execute:
+
+% nvcc --version
+
+that in my computer gives:
+
+% nvcc: NVIDIA (R) Cuda compiler driver
+% Copyright (c) 2005-2015 NVIDIA Corporation
+% Built on Tue_Aug_11_14:27:32_CDT_2015
+% Cuda compilation tools, release 7.5, V7.5.17
+
+Finally, please use some of the examples provided to check 
+that your version is working correctly.
+For compiling on clusters/supercomputers, please check if nvcc is correctly installed 
+with the same procedure provided above.
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+		Compiling PARIS-Simulator with CUDA
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Similarly to what is done with SILO,Hypre and VOFI libraries, the compilation of the cuda functionality is given by the command:
+
+% make HAVE_CUDA=1
+
+The Cuda solver WILL NOT be compiled by default.
+Before doing so, please check the Makefile and the CUDA's libraries location on your system. If necessary, modify the FFLAGS and the CUDAFLAGS path.
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+		Running PARIS-Simulator with CUDA
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+If you want to use the Poisson solver in CUDA, simply add to your Makefile:
+
+doGpu = T
+
+which is set to False by default.
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+		Structure of the implementation
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+The main idea behind the code structure is to have as few modification
+as possible to the PARIS-Simulator code structure. For this reason the
+function which relies on this feature are isolated in the main code
+using the precompiler option:
+
+% #ifdef HAVE_CUDA
+
+All the functions, both for the C function (which will launch the CUDA
+kernel) and for the MPI communications are implemented in
+module_CUDA.f90 and cudaFun.f90.
+
+module_CUDA.f90: contains all the functions required by Fortran code
+to call the C functions. If any further development to the code is
+required (for example, for extending another functionality to CUDA),
+it would be advisable to do it here.
+
+cudaFun.f90: contains all the functions required by the C code that
+need to be executed within the main Fortran structure (e.g. MPI
+intercommunications).
+
+Finally, for any further development for this part of the code are
+required, please follow the following steps:
+
+1- Create, inside module_CUDA.f90, a Fortran interface that can call
+the C kernel (which will be defined in your .cu function) and write
+here the Fortran function that will call the C function that will be
+contained in *myFun*.cu .
+
+2- Create your C functions and all the needed CUDA kernels inside a
+new function *myFun*.cu .
+
+3- If any communication is required with the main code, add the
+interface for the Fortran functions in *myFun*.cu, and then write your
+function in cudaFun.f90.
+
+4- Correct the Makefile in order to account for the new causality in the compilation.
+
+	
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+		Ongoing and future work.
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+- implement flexibility on the number of blocks (blockSize)
+- reduce the residual matrix res2 using GPUs
+- Create a test case for using the CUDA Poisson solver
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+			Acknowledgement
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+I would personally like to thank Institute Jean Le Rond d'Alembert for hosting me
+while I was working on this solver! Also a personal thank to Stephane Zaleski, Daniel
+Fuster, Stephane Popinet and Wojtek Aniszewski for the precious help and advices!
+
